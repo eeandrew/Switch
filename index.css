@@ -1,0 +1,26 @@
+.switch-wrapper {
+  height:30px;
+  background: #FFF;
+  border-radius: 19px;
+  border:2px solid #ddd;
+  position: relative;
+  box-sizing: border-box;
+  .switch-togger {
+    box-sizing: border-box;
+    position: absolute;
+    width:26px;
+    height:26px;
+    top:0px;
+    left:0px;
+    border-radius:50%;
+    background:#fff;
+    -webkit-box-shadow: 0 2px 5px rgba(0,0,0,.4);
+    box-shadow: 0 2px 5px rgba(0,0,0,.4); 
+  }
+  &.normal {
+    width:74px;
+  }
+  &.small {
+    width: 47px;
+  }
+}
