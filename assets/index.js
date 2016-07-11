@@ -46,6 +46,10 @@
 
 	'use strict';
 
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _reactDom = __webpack_require__(1);
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
@@ -62,28 +66,73 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var Wrapper = function Wrapper(props) {
-	  return _react2.default.createElement(
-	    'div',
-	    { className: 'wrapper' },
-	    props.children
-	  );
-	};
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var SwitchLabel = function (_React$Component) {
+	  _inherits(SwitchLabel, _React$Component);
+
+	  function SwitchLabel(props) {
+	    _classCallCheck(this, SwitchLabel);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SwitchLabel).call(this, props));
+
+	    _this.onValueChanged = _this.onValueChanged.bind(_this);
+	    _this.state = {
+	      isOpen: true
+	    };
+	    return _this;
+	  }
+
+	  _createClass(SwitchLabel, [{
+	    key: 'onValueChanged',
+	    value: function onValueChanged(isOpen) {
+	      this.setState({
+	        isOpen: isOpen
+	      });
+	    }
+	  }, {
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      var isOpen = this.props.isOpen;
+
+	      if (isOpen === false) {
+	        this.setState({
+	          isOpen: isOpen
+	        });
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var isOpen = this.state.isOpen;
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'wrapper' },
+	        _react2.default.createElement(
+	          'label',
+	          null,
+	          isOpen ? '开' : '关'
+	        ),
+	        _react2.default.createElement(_index2.default, _extends({}, this.props, { onValueChanged: this.onValueChanged }))
+	      );
+	    }
+	  }]);
+
+	  return SwitchLabel;
+	}(_react2.default.Component);
 
 	var App = function App(props) {
 	  return _react2.default.createElement(
 	    'div',
 	    null,
-	    _react2.default.createElement(
-	      Wrapper,
-	      { className: 'wrapper' },
-	      _react2.default.createElement(_index2.default, null)
-	    ),
-	    _react2.default.createElement(
-	      Wrapper,
-	      { className: 'wrapper' },
-	      _react2.default.createElement(_index2.default, { size: 'small' })
-	    )
+	    _react2.default.createElement(SwitchLabel, null),
+	    _react2.default.createElement(SwitchLabel, { isOpen: true, color: 'blue', size: 'small' }),
+	    _react2.default.createElement(SwitchLabel, { isOpen: false, color: 'blue' })
 	  );
 	};
 
@@ -20501,7 +20550,7 @@
 
 
 	// module
-	exports.push([module.id, ".wrapper {\n  width: 100%;\n  height: 50px;\n  display: flex;\n  align-items: center;\n  border-bottom: 1px solid #ccc;\n  text-align: right;\n  justify-content: flex-end;\n}\n", ""]);
+	exports.push([module.id, ".wrapper {\n  width: 100%;\n  height: 50px;\n  display: flex;\n  align-items: center;\n  border-bottom: 1px solid #ccc;\n  text-align: right;\n  justify-content: space-between;\n}\n", ""]);
 
 	// exports
 

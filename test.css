@@ -5,5 +5,5 @@
     align-items: center;
     border-bottom: 1px solid #ccc;
     text-align: right;
-    justify-content: flex-end;
+    justify-content: space-between;
 }
