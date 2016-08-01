@@ -14,6 +14,7 @@ export default class Gestures extends Component {
     this._onTouchCancel = this._onTouchCancel.bind(this);
     this._onTouchEnd = this._onTouchEnd.bind(this);
     this._emitEvent = this._emitEvent.bind(this);
+    this.startX = this.startY = this.moveX = this.moveY = null;
   }
   _emitEvent(eventType,e) {
     let eventHandler = this.props[eventType];
@@ -22,27 +23,35 @@ export default class Gestures extends Component {
   };
   _onTouchStart(e) {
     let point = e.touches ? e.touches[0] : e;
-    this.pointX = point.pageX;
-    this.pointY = point.pageY;
+    this.startX = point.pageX;
+    this.startY = point.pageY;
   }
   _onTouchMove(e) {
     let point = e.touches ? e.touches[0] :e;
-    let deltaX = point.pageX - this.pointX;
-    let deltaY = point.pageY - this.pointY;
+    let deltaX = this.moveX === null ? 0 : point.pageX - this.moveX;
+    let deltaY = this.moveY === null ? 0 : point.pageY - this.moveY;
     this._emitEvent('onMove',{
       deltaX,
       deltaY
     });
-    this.pointX = point.pageX;
-    this.pointY = point.pageY;
+    this.moveX = point.pageX;
+    this.moveY = point.pageY;
     e.preventDefault();
   }
   _onTouchCancel(e) {
     this._onTouchEnd();
   }
   _onTouchEnd(e) {
-    this.pointX = 0;
-    this.pointY = 0;
+    /**
+     * 在X轴或Y轴发生过移动
+     */
+    if(this.moveX !== null && Math.abs(this.moveX - this.startX) > 10 ||
+    this.moveY !== null && Math.abs(this.moveY - this.startY) > 10) {
+      console.log('moved');
+    }else {
+      this._emitEvent('onTap');
+    }
+    this.startX = this.startY = this.moveX = this.moveY = null;
   }
   render() {
    return React.cloneElement(React.Children.only(this.props.children), {
