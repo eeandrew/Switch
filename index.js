@@ -18,6 +18,7 @@ export default class Switch extends Component {
     this.onXTranslateEnd = this.onXTranslateEnd.bind(this);
     this.getWrapperStyle = this.getWrapperStyle.bind(this);
     this.onMoving = this.onMoving.bind(this);
+    this.onTap = this.onTap.bind(this);
     this.movingEnable = false;
     this.xBoundary = 0;
     this.translateX = 0;
@@ -43,6 +44,16 @@ export default class Switch extends Component {
      if(this.props.disabled) return;
      if(!this.movingEnable)return;
      this.setToggerTranslateX(e.deltaX);
+  }
+
+  onTap(e) {
+    if(this.props.disabled) return;
+    this.enableTransition(true);
+    if(this.translateX === 0) {
+      this.setToggerTranslateX(this.xBoundary);
+    }else if(this.translateX === this.xBoundary) {
+      this.setToggerTranslateX(this.xBoundary * -1);
+    }
   }
 
   onXTranslateEnd() {
@@ -155,7 +166,7 @@ export default class Switch extends Component {
       size
     } = this.props;
     return(
-      <Gestures onMove={this.onMove}>
+      <Gestures onMove={this.onMove} onTap={this.onTap}>
         <div className={classNames("switch-wrapper",size)}  ref="wrapper" style={wrapperStyle}>
           <div className="switch-togger"  
             onTouchStart={this.onToggerTouchStart} 

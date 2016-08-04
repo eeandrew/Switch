@@ -18828,6 +18828,7 @@
 	    _this.onXTranslateEnd = _this.onXTranslateEnd.bind(_this);
 	    _this.getWrapperStyle = _this.getWrapperStyle.bind(_this);
 	    _this.onMoving = _this.onMoving.bind(_this);
+	    _this.onTap = _this.onTap.bind(_this);
 	    _this.movingEnable = false;
 	    _this.xBoundary = 0;
 	    _this.translateX = 0;
@@ -18857,6 +18858,17 @@
 	      if (this.props.disabled) return;
 	      if (!this.movingEnable) return;
 	      this.setToggerTranslateX(e.deltaX);
+	    }
+	  }, {
+	    key: 'onTap',
+	    value: function onTap(e) {
+	      if (this.props.disabled) return;
+	      this.enableTransition(true);
+	      if (this.translateX === 0) {
+	        this.setToggerTranslateX(this.xBoundary);
+	      } else if (this.translateX === this.xBoundary) {
+	        this.setToggerTranslateX(this.xBoundary * -1);
+	      }
 	    }
 	  }, {
 	    key: 'onXTranslateEnd',
@@ -18975,7 +18987,7 @@
 
 	      return _react2.default.createElement(
 	        _Gestures2.default,
-	        { onMove: this.onMove },
+	        { onMove: this.onMove, onTap: this.onTap },
 	        _react2.default.createElement(
 	          'div',
 	          { className: (0, _classnames2.default)("switch-wrapper", size), ref: 'wrapper', style: wrapperStyle },
@@ -20047,6 +20059,7 @@
 	    _this._onTouchCancel = _this._onTouchCancel.bind(_this);
 	    _this._onTouchEnd = _this._onTouchEnd.bind(_this);
 	    _this._emitEvent = _this._emitEvent.bind(_this);
+	    _this.startX = _this.startY = _this.moveX = _this.moveY = null;
 	    return _this;
 	  }
 
@@ -20061,21 +20074,21 @@
 	    key: '_onTouchStart',
 	    value: function _onTouchStart(e) {
 	      var point = e.touches ? e.touches[0] : e;
-	      this.pointX = point.pageX;
-	      this.pointY = point.pageY;
+	      this.startX = point.pageX;
+	      this.startY = point.pageY;
 	    }
 	  }, {
 	    key: '_onTouchMove',
 	    value: function _onTouchMove(e) {
 	      var point = e.touches ? e.touches[0] : e;
-	      var deltaX = point.pageX - this.pointX;
-	      var deltaY = point.pageY - this.pointY;
+	      var deltaX = this.moveX === null ? 0 : point.pageX - this.moveX;
+	      var deltaY = this.moveY === null ? 0 : point.pageY - this.moveY;
 	      this._emitEvent('onMove', {
 	        deltaX: deltaX,
 	        deltaY: deltaY
 	      });
-	      this.pointX = point.pageX;
-	      this.pointY = point.pageY;
+	      this.moveX = point.pageX;
+	      this.moveY = point.pageY;
 	      e.preventDefault();
 	    }
 	  }, {
@@ -20086,8 +20099,15 @@
 	  }, {
 	    key: '_onTouchEnd',
 	    value: function _onTouchEnd(e) {
-	      this.pointX = 0;
-	      this.pointY = 0;
+	      /**
+	       * 在X轴或Y轴发生过移动
+	       */
+	      if (this.moveX !== null && Math.abs(this.moveX - this.startX) > 10 || this.moveY !== null && Math.abs(this.moveY - this.startY) > 10) {
+	        console.log('moved');
+	      } else {
+	        this._emitEvent('onTap');
+	      }
+	      this.startX = this.startY = this.moveX = this.moveY = null;
 	    }
 	  }, {
 	    key: 'render',
