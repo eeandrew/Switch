@@ -93,6 +93,7 @@
 	      this.setState({
 	        isOpen: isOpen
 	      });
+	      console.log(isOpen);
 	    }
 	  }, {
 	    key: 'componentDidMount',
@@ -126,15 +127,55 @@
 	  return SwitchLabel;
 	}(_react2.default.Component);
 
-	var App = function App(props) {
-	  return _react2.default.createElement(
-	    'div',
-	    null,
-	    _react2.default.createElement(SwitchLabel, null),
-	    _react2.default.createElement(SwitchLabel, { isOpen: true, color: 'blue', size: 'small' }),
-	    _react2.default.createElement(SwitchLabel, { isOpen: false, color: 'blue' })
-	  );
-	};
+	var App = function (_React$Component2) {
+	  _inherits(App, _React$Component2);
+
+	  function App(props) {
+	    _classCallCheck(this, App);
+
+	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
+
+	    _this2.onBtnClick = _this2.onBtnClick.bind(_this2);
+	    _this2.state = {
+	      isOpen: false
+	    };
+	    _this2.onValueChanged = _this2.onValueChanged.bind(_this2);
+	    return _this2;
+	  }
+
+	  _createClass(App, [{
+	    key: 'onBtnClick',
+	    value: function onBtnClick() {
+	      this.isOpen = !this.isOpen;
+	      this.setState({
+	        isOpen: this.isOpen
+	      });
+	    }
+	  }, {
+	    key: 'onValueChanged',
+	    value: function onValueChanged(isOpen) {
+	      this.isOpen = isOpen;
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(SwitchLabel, null),
+	        _react2.default.createElement(SwitchLabel, { isOpen: true, color: 'blue', size: 'small' }),
+	        _react2.default.createElement(SwitchLabel, { isOpen: this.state.isOpen, onValueChanged: this.onValueChanged, color: 'blue' }),
+	        _react2.default.createElement(
+	          'button',
+	          { onClick: this.onBtnClick },
+	          ' Toggle '
+	        )
+	      );
+	    }
+	  }]);
+
+	  return App;
+	}(_react2.default.Component);
 
 	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('app'));
 
@@ -8020,6 +8061,10 @@
 	  }
 	};
 
+	function registerNullComponentID() {
+	  ReactEmptyComponentRegistry.registerNullComponentID(this._rootNodeID);
+	}
+
 	var ReactEmptyComponent = function (instantiate) {
 	  this._currentElement = null;
 	  this._rootNodeID = null;
@@ -8028,7 +8073,7 @@
 	assign(ReactEmptyComponent.prototype, {
 	  construct: function (element) {},
 	  mountComponent: function (rootID, transaction, context) {
-	    ReactEmptyComponentRegistry.registerNullComponentID(rootID);
+	    transaction.getReactMountReady().enqueue(registerNullComponentID, this);
 	    this._rootNodeID = rootID;
 	    return ReactReconciler.mountComponent(this._renderedComponent, rootID, transaction, context);
 	  },
@@ -18751,7 +18796,7 @@
 
 	'use strict';
 
-	module.exports = '0.14.7';
+	module.exports = '0.14.8';
 
 /***/ },
 /* 146 */
@@ -18830,6 +18875,7 @@
 	    _this.onMoving = _this.onMoving.bind(_this);
 	    _this.onTap = _this.onTap.bind(_this);
 	    _this.movingEnable = false;
+	    _this.status = false;
 	    _this.xBoundary = 0;
 	    _this.translateX = 0;
 	    _this.state = {
@@ -18847,9 +18893,24 @@
 	      this.xBoundary = _reactDom2.default.findDOMNode(this.refs.wrapper).clientWidth - _reactDom2.default.findDOMNode(this.refs.togger).offsetWidth;
 	      this.toggerDOM = _reactDom2.default.findDOMNode(this.refs.togger);
 	      this.toggerDOM.translateX = 0;
-	      this.toggerDOM.addEventListener('transitionend', this.onXTranslateEnd);
+	      this.toggerDOM.addEventListener('transitionend', this.onXTranslateEnd, false);
+	      this.status = this.props.isOpen;
 	      if (this.props.isOpen) {
 	        this.setToggerTranslateX(this.xBoundary);
+	      }
+	    }
+	  }, {
+	    key: 'componentWillReceiveProps',
+	    value: function componentWillReceiveProps(nextProps) {
+	      if ('isOpen' in nextProps && this.props.isOpen !== nextProps.isOpen) {
+	        var isOpen = nextProps.isOpen;
+
+	        this.enableTransition(true);
+	        if (isOpen) {
+	          this.setToggerTranslateX(this.xBoundary);
+	        } else {
+	          this.setToggerTranslateX(this.xBoundary * -1);
+	        }
 	      }
 	    }
 	  }, {
@@ -18876,6 +18937,15 @@
 	      this.setState({
 	        transition: null
 	      });
+	      var onValueChanged = this.props.onValueChanged;
+
+	      if (this.translateX <= 1 && this.status === true) {
+	        this.status = false;
+	        onValueChanged && onValueChanged.call(this, false);
+	      } else if (this.translateX >= this.xBoundary && this.status === false) {
+	        this.status = true;
+	        onValueChanged && onValueChanged.call(this, true);
+	      }
 	    }
 	  }, {
 	    key: 'setToggerTranslateX',
@@ -18902,6 +18972,19 @@
 	    value: function onToggerTouchCancel(e) {
 	      if (this.props.disabled) return;
 	      this.movingEnable = false;
+	      if (this.translateX <= 1 && this.status === false) return;
+	      if (this.translateX >= this.xBoundary && this.status === true) return;
+	      var onValueChanged = this.props.onValueChanged;
+
+	      if (this.translateX <= 1) {
+	        this.status = false;
+	        onValueChanged && onValueChanged.call(this, false);
+	        return;
+	      } else if (this.translateX >= this.xBoundary) {
+	        this.status = true;
+	        onValueChanged && onValueChanged.call(this, true);
+	        return;
+	      }
 	      this.enableTransition(true);
 	      if (this.translateX < this.xBoundary / 2) {
 	        this.translateX = 0;
@@ -18918,9 +19001,7 @@
 	    value: function onMoving() {
 	      var background = '#FFF';
 	      var border = '#DDD';
-	      var _props = this.props;
-	      var color = _props.color;
-	      var onValueChanged = _props.onValueChanged;
+	      var color = this.props.color;
 
 	      if (this.translateX > this.xBoundary / 2) {
 	        background = this.getWrapperStyle(color);
@@ -18930,11 +19011,6 @@
 	        background: background,
 	        border: border
 	      });
-	      if (this.translateX === 0) {
-	        onValueChanged.call(this, false);
-	      } else if (this.translateX == this.xBoundary) {
-	        onValueChanged.call(this, true);
-	      }
 	    }
 	  }, {
 	    key: 'enableTransition',
@@ -19014,7 +19090,6 @@
 	  color: _react.PropTypes.string, //颜色 primary,blue
 	  size: _react.PropTypes.string };
 
-	//大小 normal,small
 	Switch.defaultProps = {
 	  disabled: false,
 	  isOpen: true,
@@ -20102,9 +20177,7 @@
 	      /**
 	       * 在X轴或Y轴发生过移动
 	       */
-	      if (this.moveX !== null && Math.abs(this.moveX - this.startX) > 10 || this.moveY !== null && Math.abs(this.moveY - this.startY) > 10) {
-	        console.log('moved');
-	      } else {
+	      if (this.moveX !== null && Math.abs(this.moveX - this.startX) > 10 || this.moveY !== null && Math.abs(this.moveY - this.startY) > 10) {} else {
 	        this._emitEvent('onTap');
 	      }
 	      this.startX = this.startY = this.moveX = this.moveY = null;
@@ -20201,8 +20274,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./node_modules/css-loader/index.js!./node_modules/less-loader/index.js!./index.css", function() {
-				var newContent = require("!!./node_modules/css-loader/index.js!./node_modules/less-loader/index.js!./index.css");
+			module.hot.accept("!!./node_modules/.npminstall/css-loader/0.23.1/css-loader/index.js!./node_modules/.npminstall/less-loader/2.2.3/less-loader/index.js!./index.css", function() {
+				var newContent = require("!!./node_modules/.npminstall/css-loader/0.23.1/css-loader/index.js!./node_modules/.npminstall/less-loader/2.2.3/less-loader/index.js!./index.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -20498,7 +20571,6 @@
 	function applyToTag(styleElement, obj) {
 		var css = obj.css;
 		var media = obj.media;
-		var sourceMap = obj.sourceMap;
 
 		if(media) {
 			styleElement.setAttribute("media", media)
@@ -20516,7 +20588,6 @@
 
 	function updateLink(linkElement, obj) {
 		var css = obj.css;
-		var media = obj.media;
 		var sourceMap = obj.sourceMap;
 
 		if(sourceMap) {
@@ -20551,8 +20622,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./node_modules/css-loader/index.js!./node_modules/less-loader/index.js!./test.css", function() {
-				var newContent = require("!!./node_modules/css-loader/index.js!./node_modules/less-loader/index.js!./test.css");
+			module.hot.accept("!!./node_modules/.npminstall/css-loader/0.23.1/css-loader/index.js!./node_modules/.npminstall/less-loader/2.2.3/less-loader/index.js!./test.css", function() {
+				var newContent = require("!!./node_modules/.npminstall/css-loader/0.23.1/css-loader/index.js!./node_modules/.npminstall/less-loader/2.2.3/less-loader/index.js!./test.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});

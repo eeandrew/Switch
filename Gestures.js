@@ -47,7 +47,6 @@ export default class Gestures extends Component {
      */
     if(this.moveX !== null && Math.abs(this.moveX - this.startX) > 10 ||
     this.moveY !== null && Math.abs(this.moveY - this.startY) > 10) {
-      console.log('moved');
     }else {
       this._emitEvent('onTap');
     }

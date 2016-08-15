@@ -20,6 +20,7 @@ export default class Switch extends Component {
     this.onMoving = this.onMoving.bind(this);
     this.onTap = this.onTap.bind(this);
     this.movingEnable = false;
+    this.status = false;
     this.xBoundary = 0;
     this.translateX = 0;
     this.state = {
@@ -34,10 +35,25 @@ export default class Switch extends Component {
    this.xBoundary = ReactDOM.findDOMNode(this.refs.wrapper).clientWidth - ReactDOM.findDOMNode(this.refs.togger).offsetWidth;
    this.toggerDOM = ReactDOM.findDOMNode(this.refs.togger);
    this.toggerDOM.translateX = 0;
-   this.toggerDOM.addEventListener('transitionend',this.onXTranslateEnd);
+   this.toggerDOM.addEventListener('transitionend',this.onXTranslateEnd,false);
+   this.status = this.props.isOpen;
    if(this.props.isOpen) {
      this.setToggerTranslateX(this.xBoundary);
    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if( 'isOpen' in nextProps && this.props.isOpen !== nextProps.isOpen){
+      const {
+        isOpen
+      } = nextProps;
+      this.enableTransition(true);
+      if(isOpen) {
+        this.setToggerTranslateX(this.xBoundary);
+      }else {
+        this.setToggerTranslateX(this.xBoundary * -1);
+      }
+    }
   }
 
   onMove(e) {
@@ -60,6 +76,16 @@ export default class Switch extends Component {
     this.setState({
        transition:null
      });
+     const {
+       onValueChanged
+     } = this.props;
+     if(this.translateX <= 1 && this.status === true) {
+       this.status = false;
+       onValueChanged && onValueChanged.call(this,false);
+     }else if(this.translateX >= this.xBoundary && this.status === false) {
+       this.status = true;
+       onValueChanged && onValueChanged.call(this,true);
+     }
   }
 
  setToggerTranslateX(deltaX) {
@@ -83,6 +109,20 @@ export default class Switch extends Component {
   onToggerTouchCancel(e) {
     if(this.props.disabled) return;
     this.movingEnable = false;
+    if(this.translateX <= 1 && this.status === false) return;
+    if(this.translateX >= this.xBoundary && this.status === true) return;
+    const {
+      onValueChanged
+    } = this.props;
+    if(this.translateX <= 1) {
+      this.status = false;
+      onValueChanged && onValueChanged.call(this,false);
+      return;
+    }else if(this.translateX >= this.xBoundary) {
+      this.status = true;
+      onValueChanged && onValueChanged.call(this,true);
+      return;
+    }
     this.enableTransition(true);
     if(this.translateX < this.xBoundary /2) {
       this.translateX = 0;
@@ -101,7 +141,6 @@ export default class Switch extends Component {
     let border = '#DDD';
     let {
       color,
-      onValueChanged
     } = this.props;
     if(this.translateX > this.xBoundary /2) {
       background = this.getWrapperStyle(color);
@@ -111,11 +150,6 @@ export default class Switch extends Component {
       background,
       border
     });
-    if(this.translateX === 0) {
-      onValueChanged.call(this,false);
-    }else if(this.translateX == this.xBoundary) {
-      onValueChanged.call(this,true);
-    }
   }
 
   enableTransition(isEnable) {

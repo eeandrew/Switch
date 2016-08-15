@@ -16,6 +16,7 @@ class SwitchLabel extends React.Component {
     this.setState({
       isOpen
     });
+    console.log(isOpen);
   }
 
   componentDidMount() {
@@ -42,14 +43,36 @@ class SwitchLabel extends React.Component {
   }
 }
 
-const App = (props) => {
-  return (
-    <div>
-     <SwitchLabel/>
-     <SwitchLabel isOpen={true} color="blue" size="small"/>
-     <SwitchLabel isOpen={false} color="blue"/>
-    </div>
-  );
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.onBtnClick = this.onBtnClick.bind(this);
+    this.state = {
+      isOpen: false
+    }
+    this.onValueChanged = this.onValueChanged.bind(this);
+  }
+
+  onBtnClick() {
+    this.isOpen = !this.isOpen;
+    this.setState({
+      isOpen: this.isOpen
+    });
+  }
+
+  onValueChanged(isOpen) {
+    this.isOpen = isOpen;
+  }
+
+  render() {return (
+      <div>
+        <SwitchLabel/>
+        <SwitchLabel isOpen={true} color="blue" size="small"/>
+        <SwitchLabel isOpen={this.state.isOpen} onValueChanged={this.onValueChanged} color="blue"/>
+        <button onClick={this.onBtnClick}> Toggle </button>
+      </div>
+    );
+  }
 }
 
 ReactDom.render(<App/>,document.getElementById('app'))
